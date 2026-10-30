@@ -1,0 +1,6 @@
+{
+  "name": "SwasthyaSaathi - Offline-First Health Companion",
+  "description": "Reliable health guidance, deterministic emergency safety escalation, protocol retrieval, and prioritized daily visit planning for frontline ASHA workers in rural India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

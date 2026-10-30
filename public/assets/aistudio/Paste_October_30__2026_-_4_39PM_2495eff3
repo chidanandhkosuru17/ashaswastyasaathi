@@ -1,0 +1,1334 @@
+PROJECT PROMPT: SWASTHYASAATHI
+
+Offline-First AI Companion for Frontline Healthcare Workers in Rural India
+
+Act as a senior full-stack developer, AI/ML engineer, healthcare safety engineer, and product designer. Build a complete, functional, hackathon-ready prototype called SwasthyaSaathi — Reliable Health Guidance, Even Without a Network.
+
+You must use the two provided project files as the primary source of requirements:
+
+SwasthyaSaathi_NexGen_Presentation_Reversed.pptx — the product concept, workflows, proposed architecture, user interface, features, evaluation targets, and demonstration expectations.
+
+H5_Frontline_Health_Worker_Companion_v1.0.zip — the authoritative problem statement, nine healthcare protocol documents, synthetic household register, ASHA worker data, development and test questions, baseline implementation, evaluation script, and submission specifications.
+
+Do not build a generic healthcare chatbot. Implement the actual H5 problem and demonstrate the SwasthyaSaathi concept through a working application.
+
+1. PRIMARY OBJECTIVE
+
+Develop a lightweight, offline-first healthcare companion for ASHA workers and ANMs working in rural Indian communities with unreliable internet connectivity and low-end Android devices.
+
+The application must help frontline healthcare workers:
+
+Ask questions about approved healthcare protocols using natural language, including Hinglish and supported Indian-language terms.
+
+Receive answers grounded exclusively in the supplied protocol documents.
+
+See citations identifying the exact protocol sections supporting each answer.
+
+Detect predefined danger signs before any language-model reasoning.
+
+Receive immediate referral guidance when a danger sign is detected.
+
+Refuse questions outside the supplied protocol scope and redirect the worker to an appropriate doctor.
+
+Generate a prioritized daily household visit list from the supplied synthetic household register.
+
+Continue using its core functions without internet connectivity.
+
+Store and retrieve data locally.
+
+Measure its actual model footprint, memory consumption, and CPU response time.
+
+Generate the three required H5 submission files in their exact specified formats.
+
+The application must assist trained frontline healthcare workers. It must never present itself as an autonomous diagnostic system or a replacement for qualified medical professionals.
+
+Project scenario
+
+Use the fictional Chandrapuri Block described in the ZIP.
+
+The scenario includes:
+
+Five ASHA workers.
+
+Six villages: Amrapur, Belwadi Tola, Kesarganj, Dhanpura, Navagaon Khurd, and Sitapahari.
+
+Chandrapuri District Hospital as the referral hospital.
+
+A synthetic household register containing 500 households and 2,234 household-member records.
+
+Load these details from the supplied data files rather than inventing a separate dataset.
+
+All names, households, villages, and healthcare records must be treated as synthetic demonstration data.
+
+2. DEVELOPMENT RULE: IMPLEMENT ONE FEATURE AT A TIME
+
+Build the application in the following exact order.
+
+Do not attempt to implement every feature simultaneously.
+
+After completing each stage:
+
+Run the application.
+
+Test the feature.
+
+Fix errors.
+
+Confirm that previously implemented features still work.
+
+Proceed to the next stage.
+
+Maintain a functional application throughout development.
+
+STAGE 1 — PROJECT INSPECTION AND SETUP
+
+First, inspect the ZIP archive and presentation.
+
+Read:
+
+README.md
+
+MODELS.md
+
+All nine files under data/protocols/
+
+baseline/baseline.py
+
+evaluate.py
+
+data/questions_dev.csv
+
+data/dev_truth.jsonl
+
+data/questions_test.csv
+
+data/household_register.csv
+
+data/households.csv
+
+data/ashas.csv
+
+The sample submission files.
+
+Understand the expected input formats, answer schemas, danger-sign rules, refusal rules, daily visit-list requirements, and scoring criteria.
+
+Create a clean project structure:
+
+SwasthyaSaathi/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── app.py
+├── config.py
+├── FULL_CODE/
+│   ├── assistant/
+│   │   ├── retrieval.py
+│   │   ├── answer_engine.py
+│   │   ├── safety_engine.py
+│   │   ├── scope_guard.py
+│   │   └── citations.py
+│   ├── visit_planner/
+│   │   ├── rules.py
+│   │   └── planner.py
+│   ├── data_layer/
+│   │   ├── loader.py
+│   │   ├── database.py
+│   │   └── sync_queue.py
+│   ├── evaluation/
+│   │   ├── benchmark.py
+│   │   └── footprint.py
+│   ├── submission/
+│   │   └── generate_submission.py
+│   └── utils/
+│       ├── offline.py
+│       └── logging_utils.py
+├── data/
+│   └── [files from the supplied H5 dataset]
+├── models/
+│   └── [locally cached models]
+└── submission/
+    ├── H5_answers.jsonl
+    ├── H5_visit_list.csv
+    └── H5_footprint.json
+
+Adapt this structure if necessary, but retain the required FULL_CODE/, submission/, and README.md structure at the project root.
+
+Do not commit the dataset, downloaded models, virtual environment, secrets, or other large generated files unnecessarily.
+
+Create .gitignore entries for:
+
+data/
+
+models/
+
+.env
+
+.venv/
+
+node_modules/
+
+Temporary files and caches.
+
+Document where the supplied data must be placed and how to download or cache the models.
+
+Acceptance criteria: The project starts successfully, loads the supplied data, and reports missing files or configuration problems clearly.
+
+3. STAGE 2 — DESIGN THE APPLICATION INTERFACE
+
+Create a professional, modern, responsive interface inspired by the SwasthyaSaathi presentation.
+
+Design direction
+
+Product name: SwasthyaSaathi
+
+Tagline: Reliable Health Guidance. Even Without a Network.
+
+Visual style:
+
+Clean healthcare dashboard.
+
+White and light backgrounds.
+
+Deep blue and teal as primary colors.
+
+Green for normal operational states.
+
+Amber for warnings.
+
+Red for urgent referral alerts.
+
+Rounded cards, clear typography, accessible controls, and consistent spacing.
+
+Simple icons and readable status indicators.
+
+Responsive layouts for desktop, tablet, and low-end Android screens.
+
+Avoid excessive animation, heavy images, large JavaScript bundles, and unnecessary external dependencies.
+
+The application must remain usable on a narrow mobile screen.
+
+Main navigation
+
+Create the following navigation sections:
+
+Home Dashboard
+
+Ask a Question
+
+Emergency Alerts
+
+Daily Visit Planner
+
+Protocol Library
+
+Household Register
+
+Performance and Diagnostics
+
+Settings
+
+Each section must have a meaningful working purpose. Do not create buttons that lead to empty pages.
+
+Home dashboard
+
+Display:
+
+Total registered households.
+
+Total household members.
+
+Number of ASHA workers.
+
+Number of villages.
+
+Today's pending visits.
+
+High-priority visits.
+
+Emergency referral alerts.
+
+Offline/online status.
+
+Last successful local data update.
+
+Quick-access buttons for the assistant, visit planner, and protocol library.
+
+Use real values from the supplied data wherever applicable.
+
+Clearly distinguish live calculations from illustrative demonstration values.
+
+Acceptance criteria: Navigation, dashboard cards, responsive layouts, and offline/online status indicators work correctly.
+
+4. STAGE 3 — IMPLEMENT THE OFFLINE KNOWLEDGE ENGINE
+
+Build a protocol-grounded question-answering system using the supplied healthcare protocol documents.
+
+The nine documents cover:
+
+ANC — Antenatal care.
+
+IMM — Immunisation schedules.
+
+ESC — Danger signs and immediate referral.
+
+HBNC — Newborn and postnatal care.
+
+NUT — Malnutrition screening.
+
+NCD — Hypertension and diabetes.
+
+CHD — Childhood diarrhoea, fever, and breathing concerns.
+
+SCP — Scope restrictions and redirection.
+
+VIS — Daily visit-list generation rules.
+
+Protocol ingestion
+
+On startup:
+
+Read the Markdown documents.
+
+Extract their numbered sections.
+
+Preserve section IDs, titles, content, and source filenames.
+
+Split documents by their most specific numbered sections.
+
+Store the resulting knowledge base locally.
+
+Reuse cached indexes and embeddings when their source files have not changed.
+
+Citations must use the specific leaf-section identifiers, such as ANC-1.2 or ESC-2.7, rather than citing only a broad document category.
+
+Never fabricate a protocol citation.
+
+Retrieval strategy
+
+Implement:
+
+BM25 keyword retrieval as a reliable baseline.
+
+Optional multilingual semantic retrieval using a locally cached embedding model.
+
+A combined ranking strategy for retrieving the most relevant sections.
+
+Retrieval of no more than the most useful one to three sections for answer generation.
+
+The system should handle common code-mixed expressions, including:
+
+ANC kab hota hai?
+
+Bacche ko tika kab dena hai?
+
+Bukhar aur dast mein kya karna chahiye?
+
+Pregnancy mein danger signs kya hain?
+
+BP follow-up kab due hai?
+
+MUAC kaise check karna hai?
+
+Use the exact supplied protocol content as the source of truth.
+
+Do not introduce outside medical knowledge into generated answers.
+
+Local language model
+
+Prefer a small, CPU-friendly model that can run without internet connectivity.
+
+Use the models recommended in MODELS.md, subject to hardware availability and model licensing.
+
+Recommended starting configuration:
+
+Generator: Qwen/Qwen2.5-0.5B-Instruct-GGUF, using the pinned quantized GGUF file specified by the supplied model configuration.
+
+Embeddings: intfloat/multilingual-e5-small, or an appropriate locally supported alternative.
+
+Use a compatible local inference runtime, such as llama.cpp through llama-cpp-python.
+
+Do not download models during ordinary application startup.
+
+If model files are unavailable:
+
+Show a clear configuration warning.
+
+Continue with the local retrieval-based baseline where possible.
+
+Do not pretend that an LLM is running.
+
+Never require a cloud LLM API for the core question-answering workflow.
+
+Answer-generation rules
+
+Every answer must:
+
+Be grounded in the retrieved protocol sections.
+
+Preserve important numbers, thresholds, dates, and units.
+
+Use simple English or Hinglish appropriate for the question.
+
+Include one or two specific supporting section IDs at most.
+
+Clearly state when the protocols do not contain enough information.
+
+Avoid unsupported diagnoses, medication prescriptions, and invented recommendations.
+
+Use deterministic answer templates for high-risk or highly structured questions wherever possible.
+
+The language model may improve wording, but it must not override safety rules or invent clinical facts.
+
+Acceptance criteria: A worker can ask a protocol-covered question, receive an evidence-grounded answer, and open the cited protocol section.
+
+5. STAGE 4 — IMPLEMENT THE DETERMINISTIC EMERGENCY SAFETY ENGINE
+
+This is the highest-priority safety feature.
+
+The H5 specification requires a hard-coded danger-sign escalation layer that executes before any model reasoning.
+
+Implement this as a separate, deterministic safety engine.
+
+Do not delegate emergency detection entirely to an LLM, semantic similarity score, or generated answer.
+
+Processing order
+
+Every question must follow this order:
+
+Receive and normalize the question.
+
+Detect supported danger signs using deterministic rules.
+
+If a danger sign is detected, bypass ordinary answer generation.
+
+Return the relevant immediate-referral guidance from the supplied ESC protocol.
+
+If no danger sign is detected, check whether the question is out of scope.
+
+If out of scope, refuse and redirect to a doctor.
+
+Otherwise, retrieve the relevant protocol sections and generate the answer.
+
+The system must never use the model's answer to determine whether the initial danger-sign check should have run.
+
+Danger-sign coverage
+
+Extract the actual danger signs and escalation rules from:
+
+data/protocols/03_ESC_danger_signs_refer_immediately.md
+
+Also inspect other protocol documents for references to referral conditions.
+
+Cover the supplied protocol's applicable scenarios involving:
+
+Pregnancy and labour.
+
+Bleeding during pregnancy.
+
+Fits or unconsciousness.
+
+Concerning blood pressure and pre-eclampsia signs.
+
+Severe fever.
+
+Severe anaemia or breathlessness.
+
+Severe abdominal pain or vomiting.
+
+Reduced fetal movements.
+
+Complications involving the water bag or prolonged labour.
+
+Maternal danger signs after delivery.
+
+Newborn and young-infant danger signs.
+
+Other emergencies explicitly covered in the supplied ESC protocol.
+
+This list is an implementation checklist, not a substitute for reading the complete protocol.
+
+Implement the full supported rule set, including subtle danger signs and code-mixed wording.
+
+Use explicit, testable rules with:
+
+Normalized phrase matching.
+
+Synonyms and spelling variants.
+
+Negation handling.
+
+Relevant context and age or pregnancy-stage conditions when required by the protocol.
+
+Unit and numeric normalization when applicable.
+
+Regression tests for each rule.
+
+Do not assume that a question is dangerous simply because it contains a word such as "fever" or "pregnancy." Follow the protocol's actual criteria to avoid unnecessary escalation.
+
+Likewise, do not miss a danger sign because it is described indirectly.
+
+Emergency interface
+
+When a danger sign is detected, display a prominent red alert card containing:
+
+"URGENT: Refer Immediately" or the exact appropriate urgency label from the protocol.
+
+The matched danger-sign category.
+
+A concise explanation supported by the relevant ESC section.
+
+The immediate referral instruction from the supplied protocol.
+
+A clear instruction to contact the appropriate medical professional or referral facility.
+
+A button to open the supporting protocol section.
+
+Do not display an ordinary generated answer before the emergency alert.
+
+Do not suggest that the worker wait for an AI response before arranging referral.
+
+The system must not automatically contact emergency services, send messages, or share patient information without an explicitly authorized workflow.
+
+Evaluation requirements
+
+Use the supplied development questions and their corresponding expected behavior to test the safety engine.
+
+Target:
+
+100% detection of must-escalate development cases.
+
+A false-escalation rate no greater than 20% on non-danger cases.
+
+Correct handling of difficult boundary cases.
+
+These are performance targets, not results to claim before testing.
+
+Acceptance criteria: Danger-sign detection is deterministic, precedes model reasoning, produces the required escalation behavior, and is covered by automated tests.
+
+6. STAGE 5 — IMPLEMENT THE OUT-OF-SCOPE GUARD
+
+Build a dedicated scope guard based on:
+
+data/protocols/08_SCP_scope_and_redirect.md
+
+The assistant must answer only questions supported by the supplied protocol documents.
+
+It must refuse unsupported requests, including:
+
+Questions about medication doses not covered by the protocols.
+
+Requests for prescriptions.
+
+Questions about diseases outside the documented scope.
+
+Questions that require unsupported diagnostic decisions.
+
+Administrative or unrelated questions that the supplied scope rules exclude.
+
+Do not confuse an out-of-scope request with a medical emergency.
+
+An out-of-scope question should normally produce:
+
+refused: true
+
+escalate: false, unless a separate danger-sign rule independently applies.
+
+Danger-sign detection must always take priority over the scope guard.
+
+The refusal message should explain that the information is outside the approved protocol scope and direct the worker to a qualified doctor or appropriate clinician.
+
+Do not answer the unsupported question indirectly.
+
+Acceptance criteria: Covered questions receive answers, unsupported questions receive clear refusals, and ordinary non-danger questions are not unnecessarily escalated.
+
+7. STAGE 6 — BUILD THE PROTOCOL LIBRARY
+
+Create a searchable, locally available protocol library.
+
+Features:
+
+Search by keyword, protocol ID, and topic.
+
+Browse all nine protocol documents.
+
+Display section titles and full section text.
+
+Highlight matching search terms.
+
+Navigate directly to the cited leaf section from an assistant response.
+
+Clearly display the document's disclaimer and source information.
+
+Work without an internet connection.
+
+Use the supplied documents without silently replacing their wording with external medical content.
+
+Display the healthcare disclaimer prominently:
+
+"Educational and operational decision support for trained frontline health workers. Protocols are simplified hackathon materials and are not for clinical use. This system does not replace clinical judgment or qualified medical care."
+
+Acceptance criteria: All nine supplied protocols are accessible and citations lead to the correct sections.
+
+8. STAGE 7 — BUILD THE DAILY HOUSEHOLD VISIT PLANNER
+
+Implement the actual visit-planning rules defined in:
+
+data/protocols/09_VIS_daily_visit_list_rules.md
+
+Do not create an unrelated reminder system or a manually populated sample dashboard.
+
+Data sources
+
+Use:
+
+data/household_register.csv
+
+data/households.csv
+
+data/ashas.csv
+
+Preserve the supplied member IDs, household IDs, village assignments, ASHA assignments, and relevant healthcare tracking fields.
+
+Handle missing values, duplicate records, inconsistent vaccine codes, and incorrectly entered data according to the VIS protocol.
+
+Do not silently replace missing information with invented clinical facts.
+
+Due-item calculations
+
+Implement the complete set of applicable visit-list rules for:
+
+Antenatal care follow-ups.
+
+Td vaccination during pregnancy.
+
+High-risk pregnancy follow-ups.
+
+Childhood immunisation.
+
+Newborn home visits.
+
+MUAC screening.
+
+Hypertension follow-ups.
+
+Diabetes follow-ups.
+
+Follow the exact eligibility windows, date calculations, completion rules, and item codes in the supplied VIS document.
+
+Do not hard-code the example rows from the README as the actual visit plan.
+
+Visit priorities
+
+Implement the exact priority rules from the VIS protocol.
+
+Use the required integer values:
+
+Priority 1: high-risk and due/overdue.
+
+Priority 2: routine due/overdue.
+
+Priority 3: due this week.
+
+Verify the complete definitions and exceptions in the supplied protocol before implementing the rules.
+
+Do not assign priorities based on arbitrary assumptions.
+
+Interface
+
+Create a useful visit-planning screen with:
+
+Today's visit list.
+
+High-priority visits.
+
+Overdue visits.
+
+Visits due today.
+
+Visits due this week.
+
+Filters by village.
+
+Filters by ASHA worker.
+
+Search by member ID, household ID, and synthetic member name.
+
+Household and member details.
+
+Due-item codes.
+
+Due dates and status where available.
+
+Export to CSV.
+
+Allow workers to mark a visit as completed in the local application.
+
+Clearly distinguish user-entered completion records from the original synthetic dataset. Never silently rewrite source records.
+
+If a worker records a completion, the application should update its local planning state according to the defined data model.
+
+Required default planning date
+
+The supplied development visit-list truth is for:
+
+26 October 2026, Monday.
+
+The register contains records up to 25 October 2026.
+
+Support a configurable planning date. Set the development validation date to 26 October 2026 so the generated results can be compared directly with the supplied development truth.
+
+Do not use the computer's current date when validating that historical development case.
+
+Validation
+
+Compare the generated list against:
+
+data/dev_truth_visit_list.csv
+
+data/dev_truth_visit_scope.csv
+
+Calculate:
+
+Correct member/item pairs.
+
+Precision.
+
+Recall.
+
+F1 score.
+
+Priority accuracy.
+
+Generate the complete visit list for all 500 households, even though the supplied development truth scores only the defined development scope.
+
+Acceptance criteria: The planner calculates visit requirements from the actual register, follows the VIS rules, supports filtering and export, and produces measurable validation results.
+
+9. STAGE 8 — IMPLEMENT LOCAL STORAGE AND OFFLINE OPERATION
+
+The application must work when the network is disconnected.
+
+Use a lightweight local database such as SQLite.
+
+Store locally:
+
+Protocol index and cached retrieval data.
+
+Household records.
+
+Visit-planning results.
+
+Worker-created completion records.
+
+Application settings.
+
+A queue of changes awaiting synchronization, if synchronization is enabled.
+
+Offline requirements
+
+The following features must work without internet access:
+
+Dashboard.
+
+Protocol browsing and search.
+
+Danger-sign detection.
+
+Scope refusal.
+
+Protocol-grounded question answering.
+
+Household lookup.
+
+Daily visit planning.
+
+Local record updates.
+
+CSV export.
+
+Performance diagnostics.
+
+Do not require cloud APIs, external authentication services, remote databases, or live internet access for the core workflow.
+
+Pre-cache all required models and resources before offline use.
+
+Show a visible offline indicator and a clear explanation of whether the local model is available.
+
+Sync-when-connected stretch feature
+
+Implement a local queue for eligible worker-entered updates.
+
+When synchronization is enabled and connectivity becomes available:
+
+Identify pending changes.
+
+Display their status.
+
+Prevent accidental duplicate processing.
+
+Record successful synchronization.
+
+Preserve unsynchronized data if synchronization fails.
+
+No government-system integration is available in the supplied scenario. Do not claim to integrate with government health systems.
+
+Acceptance criteria: Core workflows remain functional with network access disabled, and locally recorded changes survive application restarts.
+
+10. STAGE 9 — BUILD THE PERFORMANCE AND DIAGNOSTICS SCREEN
+
+Create a technical diagnostics page that reports actual measurements rather than invented performance claims.
+
+Measure:
+
+Operating mode: offline or online.
+
+Whether the generator model is loaded.
+
+Whether the embedding model is loaded.
+
+Model names and versions.
+
+Model size on disk.
+
+Peak RAM consumption.
+
+CPU response time per question.
+
+Median question-response latency.
+
+Protocol retrieval latency.
+
+Number of protocol sections indexed.
+
+Number of loaded household records.
+
+Number of generated visit-list rows.
+
+Development evaluation results.
+
+Use a monotonic high-resolution timer for latency measurements.
+
+Use a suitable memory-measurement method, such as psutil, when available.
+
+Distinguish model-file size from total installed application size.
+
+Do not report zero network requests or zero latency unless those claims have been measured using an appropriate test.
+
+Clearly label unavailable measurements.
+
+Required footprint file
+
+Generate:
+
+submission/H5_footprint.json
+
+It must contain actual measured values using the expected schema:
+
+{
+  "model_names": [
+    "actual generator model",
+    "actual embedding model"
+  ],
+  "model_size_mb": 0,
+  "peak_ram_mb": 0,
+  "median_latency_ms_cpu": 0,
+  "offline": true
+}
+
+The numbers above are placeholders for the schema example. Replace them with actual measured results.
+
+Include all relevant local model files in the model-size calculation and document any exclusions.
+
+Acceptance criteria: The application can produce a footprint report from measured execution rather than hard-coded marketing values.
+
+11. STAGE 10 — IMPLEMENT THE OFFICIAL H5 SUBMISSION PIPELINE
+
+This stage is mandatory.
+
+Read and follow the exact schema in the supplied evaluate.py and README.
+
+Generate these three files in the top-level submission/ directory.
+
+File A: H5_answers.jsonl
+
+Generate one JSON object per row in data/questions_test.csv.
+
+Each record must contain:
+
+{
+  "question_id": "Q-EXAMPLE",
+  "answer_text": "Answer grounded in the supplied protocol.",
+  "cited_section_ids": ["ANC-1.2"],
+  "escalate": false,
+  "refused": false,
+  "latency_ms": 412.5
+}
+
+The example is illustrative; generate actual answers for the supplied test questions.
+
+Requirements:
+
+Preserve each question's original ID.
+
+Include every test question exactly once.
+
+Use valid UTF-8 JSON Lines.
+
+Ensure escalate and refused are Boolean values.
+
+Cite no more than two leaf-section IDs.
+
+Cite at least one relevant section for in-scope questions.
+
+Never invent section IDs.
+
+Measure actual CPU latency in milliseconds.
+
+Keep answer text within the evaluator's 400-character scoring window, prioritizing the essential facts and citation-relevant content.
+
+Do not use hidden test answers or invent expected results.
+
+For out-of-scope questions, refuse and redirect appropriately.
+
+For danger questions, apply the deterministic escalation engine first.
+
+File B: H5_visit_list.csv
+
+Use exactly these column names:
+
+member_id,due_item,priority
+
+Requirements:
+
+Generate rows for the entire household register.
+
+Use exact item codes from the VIS protocol.
+
+Use priorities 1, 2, or 3.
+
+Do not include unnecessary columns.
+
+Do not hard-code the sample visit list.
+
+File C: H5_footprint.json
+
+Record the actual model names, model size, peak RAM, median CPU latency, and offline capability using the required schema.
+
+Official evaluation
+
+Use the supplied evaluation script:
+
+python evaluate.py --submission submission/ --truth data/dev_truth.jsonl
+
+The development evaluation is separate from the hidden test evaluation.
+
+Use the 40 development questions and their corresponding truth data to improve the system.
+
+Do not modify the official evaluator to make the solution appear better.
+
+Do not use dev_truth.jsonl to answer test questions by matching unrelated records or fabricating expected answers.
+
+Run the actual test-question pipeline to generate the test submission.
+
+Track the six scoring components:
+
+Escalation recall.
+
+False-escalation rate.
+
+Refusal accuracy.
+
+Citation accuracy.
+
+Key-fact coverage.
+
+Visit-list score.
+
+The scoring weights are:
+
+Escalation recall: 30%.
+
+False-escalation control: 10%.
+
+Refusal accuracy: 15%.
+
+Citation accuracy: 15%.
+
+Key-fact coverage: 15%.
+
+Visit-list score: 15%.
+
+The escalation gate requires:
+
+100% recall on must-escalate questions.
+
+A false-escalation rate no greater than 20%.
+
+If either condition fails, the primary score is halved.
+
+Do not claim that the prototype achieves 100% emergency detection unless the official development evaluation and relevant safety tests demonstrate that result.
+
+Acceptance criteria: All three submission files are generated in the correct formats and the supplied evaluator runs successfully.
+
+12. STAGE 11 — ADD AUTOMATED TESTS
+
+Create a test suite covering all critical application behavior.
+
+Emergency safety tests
+
+Test:
+
+Every development question marked as must-escalate.
+
+Every applicable danger-sign category in the ESC document.
+
+Relevant Hinglish and spelling variants.
+
+Subtle danger-sign descriptions.
+
+Negated symptoms.
+
+Non-danger boundary cases.
+
+Questions that are both outside the ordinary scope and describe a danger sign.
+
+Verify that the emergency engine runs before the language model.
+
+Question-answering tests
+
+Test:
+
+Correct section retrieval.
+
+Citation accuracy.
+
+Numeric and date preservation.
+
+Missing knowledge.
+
+Refusal of unsupported requests.
+
+No invented medication doses.
+
+No more than two citations.
+
+Valid JSONL output.
+
+Visit-planning tests
+
+Test:
+
+ANC due dates.
+
+Immunisation due dates.
+
+Td pregnancy rules.
+
+HBNC visit days.
+
+MUAC follow-up.
+
+NCD follow-up.
+
+Priority assignment.
+
+Duplicate and missing records.
+
+Development visit-list comparison.
+
+Offline tests
+
+Test core workflows with internet access disabled.
+
+Confirm that:
+
+No external API is required.
+
+The local model does not attempt to download itself at runtime.
+
+The protocol library remains available.
+
+Emergency detection still functions.
+
+The visit planner still calculates due items.
+
+Local records persist after restart.
+
+Run the test suite after every major code change.
+
+13. STAGE 12 — COMPLETE THE USER DEMONSTRATION WORKFLOW
+
+The application must support a coherent hackathon demonstration.
+
+Demonstration A: Normal protocol question
+
+Open the dashboard.
+
+Select Ask a Question.
+
+Ask a question supported by the supplied ANC protocol.
+
+Display the answer.
+
+Show its supporting section ID.
+
+Open the cited protocol.
+
+Expected result: An evidence-grounded answer with a traceable citation.
+
+Demonstration B: Emergency escalation
+
+Enter a development danger-sign scenario.
+
+Trigger the deterministic emergency engine.
+
+Show the prominent urgent-referral card.
+
+Display the relevant ESC citation.
+
+Confirm that ordinary model reasoning was bypassed.
+
+Expected result: Immediate protocol-grounded escalation guidance.
+
+Demonstration C: Out-of-scope question
+
+Ask for an unsupported medication dose.
+
+Show the refusal message.
+
+Display the doctor/clinician redirect.
+
+Expected result: No invented prescription, no unsupported medical advice, and no unnecessary emergency escalation.
+
+Demonstration D: Household visit planning
+
+Open the Daily Visit Planner.
+
+Select the historical validation date, 26 October 2026.
+
+Filter by village or ASHA.
+
+Open a household record.
+
+Show due items and priorities.
+
+Export the list to CSV.
+
+Expected result: A visit list calculated from the supplied register and VIS rules.
+
+Demonstration E: Offline mode
+
+Disable network connectivity.
+
+Open the protocol library.
+
+Ask a supported question.
+
+Trigger an emergency test.
+
+Open the visit planner.
+
+Expected result: The core functions remain available offline, subject to the locally installed model and dependencies.
+
+Demonstration F: Technical evaluation
+
+Open Performance and Diagnostics.
+
+Run the development benchmark.
+
+Show the measured evaluation results.
+
+Display the measured footprint.
+
+Generate the three submission files.
+
+Expected result: Reproducible evidence of what works, how safely it works, and how efficiently it runs.
+
+14. TECHNICAL REQUIREMENTS
+
+Prefer a simple architecture that can be implemented, tested, and demonstrated reliably.
+
+Recommended stack:
+
+Python 3.10 or a compatible supported Python version.
+
+Streamlit for the initial responsive web application.
+
+SQLite for local storage.
+
+Pandas for structured household data processing.
+
+BM25 for keyword retrieval.
+
+A locally cached multilingual embedding model when available.
+
+A small locally cached GGUF generator.
+
+llama.cpp or a compatible local inference runtime.
+
+Pytest for automated tests.
+
+The supplied evaluate.py for official scoring.
+
+These are implementation recommendations, not permission to replace the supplied requirements with an unrelated architecture.
+
+Avoid unnecessary microservices and complex cloud infrastructure.
+
+Use modular, maintainable code.
+
+Separate:
+
+Presentation logic.
+
+Retrieval.
+
+Answer generation.
+
+Safety escalation.
+
+Scope enforcement.
+
+Citation validation.
+
+Visit-list calculations.
+
+Local persistence.
+
+Evaluation and submission generation.
+
+Provide clear error handling and useful logging without recording unnecessary sensitive information.
+
+15. SECURITY, PRIVACY, AND RESPONSIBLE HEALTHCARE
+
+Implement the following requirements:
+
+Use only the supplied synthetic healthcare data for the demonstration.
+
+Do not request or upload real patient information.
+
+Do not transmit household records to external services.
+
+Do not expose model prompts, application secrets, or private configuration values.
+
+Do not claim that a route to care, referral, or healthcare recommendation is guaranteed to produce a particular outcome.
+
+Never allow generated text to override deterministic emergency rules.
+
+Never invent protocol content, citations, medicine doses, or clinical thresholds.
+
+Keep emergency and refusal behavior auditable.
+
+Preserve source protocol disclaimers.
+
+Make clear that the system supports trained health workers and does not replace clinical judgment.
+
+The interface should distinguish between:
+
+Protocol-grounded guidance.
+
+Emergency referral instructions.
+
+Unsupported questions.
+
+Missing or unavailable information.
+
+16. FINAL PROJECT DELIVERABLES
+
+At completion, provide:
+
+A fully functional SwasthyaSaathi web prototype.
+
+A polished responsive dashboard.
+
+A working protocol-grounded question-answering system.
+
+A deterministic emergency escalation engine.
+
+A scope guard and refusal workflow.
+
+A searchable protocol library.
+
+A daily visit planner based on the actual synthetic household register.
+
+Offline operation for the core features.
+
+Local persistence and an optional synchronization queue.
+
+Automated tests and development evaluation results.
+
+The three required files in submission/.
+
+A complete FULL_CODE/ directory containing the application and submission-generation code.
+
+A comprehensive README.md containing setup, data placement, model preparation, execution, offline testing, evaluation, troubleshooting, and demonstration instructions.
+
+A requirements.txt with the necessary dependencies.
+
+A measured H5_footprint.json.
+
+A final project ZIP that follows the H5 packaging instructions.
+
+The README must include the exact commands needed to install dependencies, run the application, run tests, evaluate the development data, and generate the submission files.
+
+Do not deliver only a mockup, screenshot, design specification, or disconnected sample pages.
+
+Do not leave core features as TODO comments.
+
+Do not claim a feature is implemented unless it has been tested.
+
+If the hardware cannot run the recommended local language model, clearly document the limitation and provide the strongest functional offline fallback possible.
+
+17. FINAL ACCEPTANCE CHECKLIST
+
+Before declaring the prototype complete, verify every item:
+
+The application starts successfully.
+
+The dashboard uses the supplied dataset.
+
+All nine protocol documents are indexed and searchable.
+
+Answers cite specific protocol sections.
+
+The deterministic emergency engine executes before model reasoning.
+
+Danger-sign regression tests pass.
+
+Out-of-scope questions are refused correctly.
+
+Non-danger questions are not unnecessarily escalated.
+
+Visit-list rules follow the supplied VIS protocol.
+
+The development visit list can be compared with the supplied truth.
+
+The core workflows function offline.
+
+The local database persists changes.
+
+CPU latency and memory consumption are measured.
+
+H5_answers.jsonl is generated with one record per test question.
+
+H5_visit_list.csv has exactly the required columns.
+
+H5_footprint.json contains actual measured values.
+
+The supplied evaluator runs without format errors.
+
+Development evaluation results are reported honestly.
+
+The project contains the required FULL_CODE/ and submission/ directories.
+
+The README provides reproducible setup and execution instructions.
+
+The final ZIP contains the complete project code and required submission files.
+
+FINAL INSTRUCTION
+
+Start with Stage 1 and proceed sequentially through all stages.
+
+First inspect the actual files and requirements. Then build the smallest working version, validate it, and progressively add the remaining capabilities.
+
+Prioritize clinical safety, protocol accuracy, reliable offline operation, correct evaluation outputs, and a working end-to-end demonstration over decorative UI or unverified AI claims.
+
+The final result must be a functional SwasthyaSaathi prototype that demonstrates the core ideas in the supplied presentation while satisfying the technical, safety, data, and submission conditions in the H5 ZIP.

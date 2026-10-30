@@ -1,0 +1,10 @@
+{
+  "model_names": [
+    "Deterministic Rule Safety Engine (ESC-v1)",
+    "BM25 Protocol Knowledge Indexer"
+  ],
+  "model_size_mb": 0.0,
+  "peak_ram_mb": 20.95,
+  "median_latency_ms_cpu": 0.69,
+  "offline": true
+}

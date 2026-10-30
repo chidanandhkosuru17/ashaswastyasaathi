@@ -1,0 +1,5 @@
+# SwasthyaSaathi - Offline Healthcare Decision Support System
+# Minimal, lightweight dependencies suitable for offline edge devices & evaluation
+pandas>=2.0.0
+numpy>=1.24.0
+pytest>=7.0.0
